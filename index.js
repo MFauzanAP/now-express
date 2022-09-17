@@ -1,32 +1,57 @@
-const express = require("express");
-const app = express();
-
+const express = require('express')
+const bodyParser = require("body-parser")
+const cors = require('cors')
+const app = express()
 const port = 5000;
+const { validateEmail } = require('./validation')
+require("./bot")
+const users = require('./Users')
 
-// Body parser
-app.use(express.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(express.json())
+app.use(cors())
 
-// Home route
-app.get("/", (req, res) => {
-  res.send("Welcome to a basic express App");
-});
+app.get('/', (req, res) => {
+  res.send({ "message": "The API is working!" })
+})
+// users.rankUser('1020365193768874055');
+app.post('/register', (req, res) => {
+  let params = req.body
+  let email = params.email
+  let name = params.name
+  if (email === undefined || name === undefined) {
+    res.status(401).send({ "message": "Undfined fields are required.", "email": email != undefined ? undefined : "undefined", "name": name != undefined ? undefined : "undefined" })
+    return
+  }
+  if (!validateEmail(email)) {
+    res.status(401).send({ "message": "Invalid Email." })
+    return
+  }
+  users.addUser(email, name).then(function (created) {
+    if (!created) {
+      res.status(401).send({ "message": "User already exists." })
+      return
+    }
+    res.send(users.getUserData(email))
+  })
 
-// Mock API
-app.get("/users", (req, res) => {
-  res.json([
-    { name: "William", location: "Abu Dhabi" },
-    { name: "Chris", location: "Vegas" }
-  ]);
-});
+})
 
-app.post("/user", (req, res) => {
-  const { name, location } = req.body;
+app.post('/getUserData', function (req, res) {
+  console.log("Fetching user data...")
+  if (req.body.hasOwnProperty("email")) {
+    if (users.isEmailRegistered(req.body.email)) {
+      console.log("Data fetched successfully.")
+      res.send(users.getUserData(req.body.email))
+      return
+    }
+    console.log("failed too look up user data for email address: " + req.body.email)
+    res.status(400).send({"message": "User not registered"})
+    return
+  }
+  res.status(401).send({ "message": "Email field is required." })
+})
 
-  res.send({ status: "User created", name, location });
-});
-
-// Listen on port 5000
 app.listen(port, () => {
-  console.log(`Server is booming on port 5000
-Visit http://localhost:5000`);
-});
+  console.log(`GameDevEvent backend listening on port ${port}`)
+})
