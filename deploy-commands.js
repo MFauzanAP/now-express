@@ -3,8 +3,8 @@ const { REST } = require('@discordjs/rest');
 console.log(clientId)
 
 const commands = [
-	new SlashCommandBuilder().setName('verify').setDescription('Verifies the user\'s account and enables phases.'),
-	new SlashCommandBuilder().setName('rankup').setDescription('ranks up the participant and marks his phase as complete!'),
+	new SlashCommandBuilder().setName('unlock').setDescription('Unlocks a phase from the given code'),
+	new SlashCommandBuilder().setName('approve').setDescription('Approves a participant\'s work for a phase and increments his progress'),
 ].map(command => command.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);

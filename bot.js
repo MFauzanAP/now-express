@@ -13,8 +13,8 @@ client.on('interactionCreate', async interaction => {
 
     const { commandName } = interaction;
     console.log(interaction.user.username + " ran the command: " + commandName)
-    if (commandName === 'verify') {
-        interaction.reply("Please check your DM to verify your email id");
+    if (commandName === 'unlock') {
+        interaction.reply("Please check your DM to enter the code from the website");
         const filter = (m) => true
         const message = await interaction.user.send("Enter the code key given from the event website:")
         const collector = message.channel.createMessageCollector({ filter, max: 1, time: 30000 })
@@ -41,7 +41,7 @@ client.on('interactionCreate', async interaction => {
             }
         })
 
-    }else if (commandName === "rankup"){
+    }else if (commandName === "approve"){
         if(!interaction.memberPermissions.has(PermissionFlagsBits.Administrator,true)){
             await interaction.reply("nope! you don't have permission to run this command.")
             return
