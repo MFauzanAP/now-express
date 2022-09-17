@@ -44,7 +44,7 @@ async function addChannelUserEmailRelation(userEmail, channelId) {
     }).promise()).Body.toString());
     if (keys.hasOwnProperty(channelId)) 
         return false
-    keys[channelId] = userEmail
+    keys[channelId] = userEmail.toLowerCase()
     await s3.putObject({
         Key: 'keys.json',
         Bucket: process.env.AWS_BUCKET,
@@ -65,10 +65,10 @@ async function verifyChannel(code,userId) {
         Bucket: process.env.AWS_BUCKET,
         Key: 'data.json'
     }).promise()).Body.toString()).users;
-    if(users[userEmail].progress >= 2){
+    if(users[userEmail.toLowerCase()].progress >= 2){
         return false;
     }
-    let user = users[userEmail]
+    let user = users[userEmail.toLowerCase()]
     if(!code in user.discordChannelIds)
          return false
     guild = await client.guilds.cache.get(process.env.GUILD_ID)
@@ -113,13 +113,13 @@ async function createChannel(channel_name, guild, title, username, email) {
             Key: 'data.json'
         }).promise()).Body.toString()).users;
         console.log(users);
-        users[email].discordChannelIds.push(channel.id);
+        users[email.toLowerCase()].discordChannelIds.push(channel.id);
         await s3.putObject({
             Key: 'data.json',
             Bucket: process.env.AWS_BUCKET,
             Body: JSON.stringify({ users: users }),
         }).promise();
-        addChannelUserEmailRelation(email, channel.id);
+        addChannelUserEmailRelation(email.toLowerCase(), channel.id);
     })
 }
 
@@ -133,7 +133,7 @@ async function rankUser(code){
             Bucket: process.env.AWS_BUCKET,
             Key: 'data.json'
         }).promise()).Body.toString()).users;
-        users[user.email].progress += 1;
+        users[user.email.toLowerCase()].progress += 1;
         await s3.putObject({
             Key: 'data.json',
             Bucket: process.env.AWS_BUCKET,
@@ -148,7 +148,7 @@ async function getUserData(userEmail) {
         Bucket: process.env.AWS_BUCKET,
         Key: 'data.json'
     }).promise()).Body.toString()).users;
-    return users[userEmail];
+    return users[userEmail.toLowerCase()];
 }
 
 async function getUserByChannelId(channelId) {

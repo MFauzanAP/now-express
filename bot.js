@@ -23,10 +23,8 @@ client.on('interactionCreate', async interaction => {
             if (users.channelUserExists(code)) {
                 res = await users.verifyChannel(code, m.author.id)
                 if(res){
-                    p = 1
-                    if(await users.getUserByChannelId(code).progress > 1)
-                        p = 2
-                    m.reply("Congratulations! you have unlocked phase " + p)
+                    let progress = await users.getUserByChannelId(code).progress;
+                    m.reply("Congratulations! you have unlocked phase " + (progress + 1))
                 } else {
                     m.reply("Invalid credentials!")
                 }
