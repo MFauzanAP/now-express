@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
 })
 // users.rankUser('1020365193768874055');
 app.post('/register', async (req, res) => {
-  res.set('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   let params = req.body
   let email = params.email
   let name = params.name
@@ -52,7 +52,7 @@ app.post('/register', async (req, res) => {
 })
 
 app.post('/getUserData', async function (req, res) {
-  res.set('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   console.log("Fetching user data...")
   if (req.body.hasOwnProperty("email")) {
     if (await users.isEmailRegistered(req.body.email)) {
