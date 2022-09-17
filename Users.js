@@ -126,6 +126,7 @@ async function createChannel(channel_name, guild, title, username, email) {
 async function rankUser(code){
     let user = getUserByChannelId(code)
     progress = user.progress
+    console.log(user);
     console.log(progress);
     if(progress <= 1){
         let users = JSON.parse((await s3.getObject({
@@ -136,7 +137,7 @@ async function rankUser(code){
         await s3.putObject({
             Key: 'data.json',
             Bucket: process.env.AWS_BUCKET,
-            Body: JSON.stringify({ "users": users }),
+            Body: JSON.stringify({ users: users }),
         }).promise();
         return true
     }
@@ -151,6 +152,7 @@ async function getUserData(userEmail) {
 }
 
 async function getUserByChannelId(channelId) {
+    console.log(channelId);
     let keys = JSON.parse((await s3.getObject({
         Bucket: process.env.AWS_BUCKET,
         Key: 'keys.json'
@@ -159,6 +161,8 @@ async function getUserByChannelId(channelId) {
         Bucket: process.env.AWS_BUCKET,
         Key: 'data.json'
     }).promise()).Body.toString()).users;
+    console.log(keys);
+    console.log(users);
     return users[keys[channelId]]
 }
 
