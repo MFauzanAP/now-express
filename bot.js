@@ -24,7 +24,7 @@ client.on('interactionCreate', async interaction => {
                 res = await users.verifyChannel(code, m.author.id)
                 if(res){
                     p = 1
-                    if(await users.getUserByChannelId(code).progress >= 1)
+                    if(await users.getUserByChannelId(code).progress > 1)
                         p = 2
                     m.reply("Congratulations! you have unlocked phase " + p)
                 } else {
