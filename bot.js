@@ -24,7 +24,7 @@ client.on('interactionCreate', async interaction => {
                 res = await users.verifyChannel(code, m.author.id)
                 if(res){
                     p = 1
-                    if(users.getUserByChannelId(code).progress >= 1)
+                    if(await users.getUserByChannelId(code).progress >= 1)
                         p = 2
                     m.reply("Congratulations! you have unlocked phase " + p)
                 } else {
@@ -50,7 +50,7 @@ client.on('interactionCreate', async interaction => {
             await interaction.reply("This channel is not specified to a particular user participant!")
             return
         }
-        resultOfRanking = users.rankUser(interaction.channelId)
+        resultOfRanking = await users.rankUser(interaction.channelId)
         if(resultOfRanking){
             await interaction.user.send("User was successfully ranked up!")
             await interaction.reply("Congratulations you have completed this phase, please visit the website to get the code for the next phase!")

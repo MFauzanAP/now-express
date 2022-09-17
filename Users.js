@@ -1,19 +1,20 @@
-const jsonData = require('./data.json')
-const keys = require('./keys.json')
-const fs = require('fs')
+const {s3} = require('./aws');
 const client = require("./Djs")
 const { ChannelType, PermissionFlagsBits } = require('discord.js')
-let users = jsonData.users;
-
-if (!(jsonData.hasOwnProperty("users"))) {
-    users = {};
-}
 
 async function addUser(userEmail, name) {
-    if (isEmailRegistered(userEmail))
+    if (await isEmailRegistered(userEmail))
         return false;
     console.log("Registering user: " + userEmail)
     guild = client.guilds.cache.get(process.env.GUILD_ID)
+    let users = JSON.parse((await s3.getObject({
+        Bucket: process.env.AWS_BUCKET,
+        Key: 'data.json'
+    }).promise()).Body.toString()).users;
+    let keys = JSON.parse((await s3.getObject({
+        Bucket: process.env.AWS_BUCKET,
+        Key: 'keys.json'
+    }).promise()).Body.toString());
     users[userEmail.toLowerCase()] = {
         "fullName": name,
         "email": userEmail.toLowerCase(),
@@ -21,14 +22,26 @@ async function addUser(userEmail, name) {
         "discordChannelIds": [],
         "progress": 0
     };
+    await s3.putObject({
+        Key: 'keys.json',
+        Bucket: process.env.AWS_BUCKET,
+        Body: JSON.stringify(keys),
+    }).promise();
+    await s3.putObject({
+        Key: 'data.json',
+        Bucket: process.env.AWS_BUCKET,
+        Body: JSON.stringify({ users: users }),
+    }).promise();
     await createChannel("phase-one", guild, "Welcome to Phase One!", name, userEmail)
     await createChannel("phase-two", guild, "Congratulations! You have successfully reached the second and last phase of the event.", name, userEmail)
-    fs.writeFileSync('keys.json', JSON.stringify(keys));
-    fs.writeFileSync('data.json', JSON.stringify({ "users": users }));
     return true
 }
 
-function addChannelUserEmailRelation(userEmail, channelId) {
+async function addChannelUserEmailRelation(userEmail, channelId) {
+    let keys = JSON.parse((await s3.getObject({
+        Bucket: process.env.AWS_BUCKET,
+        Key: 'keys.json'
+    }).promise()).Body.toString());
     if (keys.hasOwnProperty(channelId)) 
         return false
     keys[channelId] = userEmail
@@ -38,7 +51,15 @@ function addChannelUserEmailRelation(userEmail, channelId) {
 async function verifyChannel(code,userId) {
     if(!channelUserExists(code))
         return false;
-    let userEmail = keys[code]
+    let keys = JSON.parse((await s3.getObject({
+        Bucket: process.env.AWS_BUCKET,
+        Key: 'keys.json'
+    }).promise()).Body.toString());
+    let userEmail = keys[code];
+    let users = JSON.parse((await s3.getObject({
+        Bucket: process.env.AWS_BUCKET,
+        Key: 'data.json'
+    }).promise()).Body.toString()).users;
     if(users[userEmail].progress >= 2){
         return false;
     }
@@ -82,35 +103,68 @@ async function createChannel(channel_name, guild, title, username, email) {
                 }
             }]
         })
+        let users = JSON.parse((await s3.getObject({
+            Bucket: process.env.AWS_BUCKET,
+            Key: 'data.json'
+        }).promise()).Body.toString()).users;
+        console.log(users);
         users[email].discordChannelIds.push(channel.id);
         addChannelUserEmailRelation(email, channel.id);
     })
 }
 
-function rankUser(code){
+async function rankUser(code){
     let user = getUserByChannelId(code)
     progress = user.progress
     console.log(progress);
     if(progress <= 1){
+        let users = JSON.parse((await s3.getObject({
+            Bucket: process.env.AWS_BUCKET,
+            Key: 'data.json'
+        }).promise()).Body.toString()).users;
         users[user.email].progress += 1;
-        fs.writeFileSync('data.json', JSON.stringify({ "users": users }));
+        await s3.putObject({
+            Key: 'data.json',
+            Bucket: process.env.AWS_BUCKET,
+            Body: JSON.stringify({ "users": users }),
+        }).promise();
         return true
     }
     return false;
 }
-function getUserData(userEmail) {
+async function getUserData(userEmail) {
+    let users = JSON.parse((await s3.getObject({
+        Bucket: process.env.AWS_BUCKET,
+        Key: 'data.json'
+    }).promise()).Body.toString()).users;
     return users[userEmail];
 }
 
-function getUserByChannelId(channelId) {
+async function getUserByChannelId(channelId) {
+    let keys = JSON.parse((await s3.getObject({
+        Bucket: process.env.AWS_BUCKET,
+        Key: 'keys.json'
+    }).promise()).Body.toString());
+    let users = JSON.parse((await s3.getObject({
+        Bucket: process.env.AWS_BUCKET,
+        Key: 'data.json'
+    }).promise()).Body.toString()).users;
     return users[keys[channelId]]
 }
 
-function isEmailRegistered(email) {
+async function isEmailRegistered(email) {
+    let users = JSON.parse((await s3.getObject({
+        Bucket: process.env.AWS_BUCKET,
+        Key: 'data.json'
+    }).promise()).Body.toString()).users;
     return users.hasOwnProperty(email.toLowerCase());
 }
 
-function channelUserExists(code) {
+async function channelUserExists(code) {
+    let keys = JSON.parse((await s3.getObject({
+        Bucket: process.env.AWS_BUCKET,
+        Key: 'keys.json'
+    }).promise()).Body.toString());
     return code in keys
 }
 
