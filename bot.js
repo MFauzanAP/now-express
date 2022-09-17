@@ -54,14 +54,20 @@ client.on('interactionCreate', async interaction => {
             await interaction.reply("Something went wrong! Please try again")
             return
         }
-        resultOfRanking = await users.rankUser(interaction.channelId)
-        if(resultOfRanking){
-            await interaction.user.send("User was successfully ranked up!")
-            await interaction.reply("Congratulations you have completed this phase, please visit the website to get the code for the next phase!")
-        }else{
-            await interaction.reply("Congratulations you have completed all the phases!")
-            await interaction.user.send("User had maxed up his ranking game!")
-        }
+        users.rankUser(interaction.channelId)
+            .then(async (result) => {
+                console.log(result);
+                if(result){
+                    console.log('noice');
+                    await interaction.user.send("User was successfully ranked up!")
+                    await interaction.reply("Congratulations you have completed this phase, please visit the website to get the code for the next phase!")
+                }else{
+                    console.log('not noice');
+                    await interaction.reply("Congratulations you have completed all the phases!")
+                    await interaction.user.send("User had maxed up his ranking game!")
+                }
+            });
+        
     }
 });
 
