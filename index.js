@@ -27,6 +27,15 @@ app.use(cors({
 app.get('/', (req, res) => {
   res.send({ "message": "The API is working!" })
 })
+
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') res.send(200);
+  else next();
+})
 // users.rankUser('1020365193768874055');
 app.post('/register', async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
