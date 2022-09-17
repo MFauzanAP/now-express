@@ -50,6 +50,10 @@ client.on('interactionCreate', async interaction => {
             await interaction.reply("This channel is not specified to a particular user participant!")
             return
         }
+        if (!interaction.channelId){
+            await interaction.reply("Something went wrong! Please try again")
+            return
+        }
         resultOfRanking = await users.rankUser(interaction.channelId)
         if(resultOfRanking){
             await interaction.user.send("User was successfully ranked up!")

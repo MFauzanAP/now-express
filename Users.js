@@ -124,7 +124,7 @@ async function createChannel(channel_name, guild, title, username, email) {
 }
 
 async function rankUser(code){
-    let user = getUserByChannelId(code)
+    let user = await getUserByChannelId(code)
     progress = user.progress
     console.log(user);
     console.log(progress);
