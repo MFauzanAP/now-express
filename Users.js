@@ -45,6 +45,11 @@ async function addChannelUserEmailRelation(userEmail, channelId) {
     if (keys.hasOwnProperty(channelId)) 
         return false
     keys[channelId] = userEmail
+    await s3.putObject({
+        Key: 'keys.json',
+        Bucket: process.env.AWS_BUCKET,
+        Body: JSON.stringify(keys),
+    }).promise();
     return true
 }
 
@@ -109,6 +114,11 @@ async function createChannel(channel_name, guild, title, username, email) {
         }).promise()).Body.toString()).users;
         console.log(users);
         users[email].discordChannelIds.push(channel.id);
+        await s3.putObject({
+            Key: 'data.json',
+            Bucket: process.env.AWS_BUCKET,
+            Body: JSON.stringify({ users: users }),
+        }).promise();
         addChannelUserEmailRelation(email, channel.id);
     })
 }
