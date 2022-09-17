@@ -21,7 +21,6 @@ app.options("/register", function(req, res, next){
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
   res.sendStatus(200);
-  next();
 });
 app.post('/register', async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -56,7 +55,6 @@ app.options("/getUserData", function(req, res, next){
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
   res.sendStatus(200);
-  next();
 });
 app.post('/getUserData', async function (req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
