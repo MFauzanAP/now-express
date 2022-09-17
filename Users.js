@@ -1,7 +1,6 @@
 const jsonData = require('./data.json')
 const keys = require('./keys.json')
 const fs = require('fs')
-const { guildId } = require('./config.json')
 const client = require("./Djs")
 const { ChannelType, PermissionFlagsBits } = require('discord.js')
 let users = jsonData.users;
@@ -14,7 +13,7 @@ async function addUser(userEmail, name) {
     if (isEmailRegistered(userEmail))
         return false;
     console.log("Registering user: " + userEmail)
-    guild = client.guilds.cache.get(guildId)
+    guild = client.guilds.cache.get(process.env.GUILD_ID)
     users[userEmail.toLowerCase()] = {
         "fullName": name,
         "email": userEmail.toLowerCase(),
@@ -46,7 +45,7 @@ async function verifyChannel(code,userId) {
     let user = users[userEmail]
     if(!code in user.discordChannelIds)
          return false
-    guild = await client.guilds.cache.get(guildId)
+    guild = await client.guilds.cache.get(process.env.GUILD_ID)
     channel = await guild.channels.cache.get(code)
     await channel.permissionOverwrites.edit(userId, { ViewChannel: true });
     return true

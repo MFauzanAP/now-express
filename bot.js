@@ -1,5 +1,4 @@
 const client = require('./Djs')
-const {token} = require('./config.json');
 const users = require('./Users');
 const { PermissionFlagsBits } = require('discord.js');
 
@@ -66,4 +65,4 @@ client.on('guildMemberAdd', async member => {
     await member.send("Hello welcome to the new QUCC game dev event discord server! to begin run /verify in the bot commands channel in the server!");
 });
 
-client.login(token);
+client.login(process.env.TOKEN);
