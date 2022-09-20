@@ -37,6 +37,78 @@ async function addUser(userEmail, name) {
     return true
 }
 
+const rewardUser = async (email) => {
+    let users = JSON.parse((await s3.getObject({
+        Bucket: process.env.AWS_BUCKET,
+        Key: 'data.json'
+    }).promise()).Body.toString()).users;
+    users[email.toLowerCase()].completed = true;
+    fetch('https://sync.api.bannerbear.com/v2/images', {
+        method: 'POST',
+        headers: {
+            'Content-Type' : 'application/json',
+            Authorization: 'Bearer bb_pr_f8894f697943a673d0233ade21563d',
+        },
+        body: JSON.stringify({
+            "template": "Kp21rAZjGQ1v56eLnd",
+            "modifications": [
+                {
+                    "name": "name_text",
+                    "text": users[email.toLowerCase()].fullName
+                }
+            ]
+        }),
+    })
+        .then((res) => res.json())
+        .then(({ image_url }) => {
+
+            //  Convert to pdf
+            fetch('https://v2.convertapi.com/convert/images/to/pdf?Secret=fN1el6iavCaVVhrP', {
+                method: 'POST',
+                headers: {
+                    "Content-Type": 'application/json',
+                },
+                body: JSON.stringify({
+                    "Parameters": [
+                        {
+                            "Name": "Files",
+                            "FileValues": [
+                                {
+                                    "Url": image_url
+                                }
+                            ]
+                        },
+                        {
+                            "Name": "StoreFile",
+                            "Value": true
+                        },
+                        {
+                            "Name": "FileName",
+                            "Value": `Completion Certificate - ${users[email.toLowerCase()].fullName}`
+                        }
+                    ]
+                }),
+            })
+                .then((res) => res.json())
+                .then(({ Files }) => {
+
+                    //  Send certificate to discord
+                    const certificate = Files[0].Url;
+                    channel = client.channels.cache.get(users[email.toLowerCase()].discordChannelIds[1])
+                    channel.send('Congrats! You have successfully completed the event.');
+                    channel.send({ files: [ { attachment: certificate, name: `Completion Certificate - ${users[email.toLowerCase()].fullName}.pdf`, description: 'Your certificate :)' } ] });
+
+                    s3.putObject({
+                        Key: 'data.json',
+                        Bucket: process.env.AWS_BUCKET,
+                        Body: JSON.stringify({ users: users }),
+                    }).promise();
+
+                })
+
+        })
+}
+
 async function addChannelUserEmailRelation(userEmail, channelId) {
     let keys = JSON.parse((await s3.getObject({
         Bucket: process.env.AWS_BUCKET,
@@ -185,6 +257,7 @@ async function channelUserExists(code) {
 module.exports = {
     isEmailRegistered,
     addUser,
+    rewardUser,
     getUserData,
     verifyChannel,
     channelUserExists,
