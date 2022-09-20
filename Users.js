@@ -1,5 +1,6 @@
 const {s3} = require('./aws');
 const client = require("./Djs")
+const fetch = require("node-fetch")
 const { ChannelType, PermissionFlagsBits } = require('discord.js')
 
 async function addUser(userEmail, name) {
