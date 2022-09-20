@@ -1,6 +1,6 @@
 const {s3} = require('./aws');
 const client = require("./Djs")
-const fetch = require("node-fetch")
+const axios = require('axios').default;
 const { ChannelType, PermissionFlagsBits } = require('discord.js')
 
 async function addUser(userEmail, name) {
@@ -44,13 +44,14 @@ const rewardUser = async (email) => {
         Key: 'data.json'
     }).promise()).Body.toString()).users;
     users[email.toLowerCase()].completed = true;
-    fetch('https://sync.api.bannerbear.com/v2/images', {
-        method: 'POST',
+    axios({
+        url: 'https://sync.api.bannerbear.com/v2/images',
+        method: 'post',
         headers: {
             'Content-Type' : 'application/json',
             Authorization: 'Bearer bb_pr_f8894f697943a673d0233ade21563d',
         },
-        body: JSON.stringify({
+        data: JSON.stringify({
             "template": "Kp21rAZjGQ1v56eLnd",
             "modifications": [
                 {
@@ -60,16 +61,17 @@ const rewardUser = async (email) => {
             ]
         }),
     })
-        .then((res) => res.json())
+        .then((res) => res.data)
         .then(({ image_url }) => {
 
             //  Convert to pdf
-            fetch('https://v2.convertapi.com/convert/images/to/pdf?Secret=fN1el6iavCaVVhrP', {
-                method: 'POST',
+            axios({
+                url: 'https://v2.convertapi.com/convert/images/to/pdf?Secret=fN1el6iavCaVVhrP',
+                method: 'post',
                 headers: {
                     "Content-Type": 'application/json',
                 },
-                body: JSON.stringify({
+                data: JSON.stringify({
                     "Parameters": [
                         {
                             "Name": "Files",
@@ -90,7 +92,7 @@ const rewardUser = async (email) => {
                     ]
                 }),
             })
-                .then((res) => res.json())
+                .then((res) => res.data)
                 .then(({ Files }) => {
 
                     //  Send certificate to discord
