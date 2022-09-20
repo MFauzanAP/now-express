@@ -49,7 +49,7 @@ const rewardUser = async (email) => {
         method: 'post',
         headers: {
             'Content-Type' : 'application/json',
-            Authorization: 'Bearer bb_pr_f8894f697943a673d0233ade21563d',
+            Authorization: 'Bearer bb_pr_dbf86d07e794a306342f902a5fc540',
         },
         data: JSON.stringify({
             "template": "Kp21rAZjGQ1v56eLnd",
